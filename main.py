@@ -10,12 +10,13 @@ import argparse
 parser = argparse.ArgumentParser(description='Simple telegram channel backup utility')
 parser.add_argument("--api", default="w", help="api_id")
 parser.add_argument("--hash", default="0", help="hash")
-parser.add_argument("--channel", default="0", help="Channel ID")
+parser.add_argument("--channel", default="z", help="Channel ID")
 parser.add_argument("--task", default="list", help="What to do? list of grab")
 args = parser.parse_args()
 
 api_id = 0
 api_hash = ""
+chan_id = 0
 try:
     api_id = int(args.api)
 except:
@@ -27,6 +28,12 @@ if args.hash == "0":
     exit(1)
 
 api_hash = args.hash
+
+try:
+    chan_id = int(args.channel)
+except:
+    print("Bad channel")
+    exit(1)
 
 client = TelegramClient('teleclient_session', api_id, api_hash)
 client.start()
@@ -47,7 +54,7 @@ async def dump_messages():
 
     offset=0
 
-    ch_ent = await client.get_entity(PeerChannel(1149668735))
+    ch_ent = await client.get_entity(PeerChannel(chan_id))
 
     user_id = {}
     first_name = {}
