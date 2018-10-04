@@ -1,4 +1,6 @@
 #!//usr/bin/python
+# Hint: for nice stats top-100 you can call
+# cat messages_from_chat |grep \| | cut -f 1 -d \| |sort|uniq -c|sort -nr | head -100|nl|sed -e 's/None/-/g'
 import asyncio
 from telethon import TelegramClient
 from telethon.tl.types import PeerChannel, PeerUser
@@ -46,10 +48,16 @@ async def dump_messages():
     offset=0
 
     ch_ent = await client.get_entity(PeerChannel(1149668735))
+
+    user_id = {}
+    first_name = {}
+    second_name = {}
+    nickname = {}
+
     while True:
         posts = await client(GetHistoryRequest(
             peer=ch_ent,
-            limit=10,
+            limit=80,
             offset_date=None,
             offset_id=offset,
             max_id=0,
@@ -59,9 +67,16 @@ async def dump_messages():
 
 
         for message in posts.messages:
-            user = await client.get_entity(PeerUser(message.from_id))
-            print("%s\t%s" % (user.first_name, message.message), file=f)
-            print("%s\t%s" % (user.first_name, message.message))
+            us_id = message.from_id
+            if us_id not in user_id:
+                user = await client.get_entity(PeerUser(us_id))
+                user_id[us_id] = "1"
+                first_name[us_id] = user.first_name
+                second_name[us_id] = user.last_name
+                nickname[us_id] = user.username
+
+            print("%s %s %s | %s" % (first_name[us_id],second_name[us_id],nickname[us_id], message.message), file=f)
+            print("%s %s %s | %s" % (first_name[us_id], second_name[us_id], nickname[us_id], message.message))
             offset=message.id
 
         f.flush()
